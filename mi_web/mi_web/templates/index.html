@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titulo %}Tareas · Mi web{% endblock %}
+
+{% block contenido %}
+<h1>Tareas del equipo</h1>
+<p class="intro">Ejemplo mínimo de cómo Python (Flask) y HTML trabajan juntos.</p>
+
+<form class="nueva" action="{{ url_for('agregar') }}" method="post">
+  <input type="text" name="texto" placeholder="Escribe una tarea" required autofocus>
+  <button type="submit">Agregar tarea</button>
+</form>
+
+{% if tareas %}
+<ul class="lista">
+  {% for t in tareas %}
+  <li class="{{ 'hecha' if t.hecha }}">
+    <form action="{{ url_for('alternar', tarea_id=t.id) }}" method="post">
+      <button class="texto" type="submit" title="Marcar como {{ 'pendiente' if t.hecha else 'hecha' }}">
+        {{ t.texto }}
+      </button>
+    </form>
+    <form action="{{ url_for('borrar', tarea_id=t.id) }}" method="post">
+      <button class="borrar" type="submit" aria-label="Borrar tarea">Borrar</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="vacio">No hay tareas todavía. Agrega la primera arriba.</p>
+{% endif %}
+{% endblock %}

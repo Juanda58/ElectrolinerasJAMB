@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Mi web{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+</head>
+<body>
+  <header class="cabecera">
+    <a class="marca" href="{{ url_for('inicio') }}">Mi web</a>
+    <nav>
+      <a href="{{ url_for('inicio') }}">Tareas</a>
+      <a href="{{ url_for('acerca') }}">Acerca</a>
+    </nav>
+  </header>
+
+  <main class="contenido">
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer class="pie">Hecho con Python y HTML</footer>
+</body>
+</html>
