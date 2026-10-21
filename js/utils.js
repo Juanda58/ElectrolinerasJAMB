@@ -118,3 +118,46 @@ function debounce(fn, wait = 250) {
 }
 
 function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+
+// --- Foto de perfil ---
+// Recorta al centro en cuadrado y reduce a 256x256 JPEG (la foto pesa ~20-40 KB)
+function resizeImage(file, size = 256) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type.startsWith('image/')) return reject(new Error('Selecciona un archivo de imagen.'));
+    if (file.size > 8 * 1024 * 1024) return reject(new Error('La imagen no puede superar 8 MB.'));
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const side = Math.min(img.width, img.height);
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      canvas.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('No se pudo procesar la imagen.')), 'image/jpeg', 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('No se pudo leer la imagen.')); };
+    img.src = url;
+  });
+}
+
+// Foto del usuario o, si no tiene, círculo con sus iniciales
+function avatarNode(user, size = 'md') {
+  const name = user?.name || '?';
+  const cls = `avatar avatar--${size}`;
+  if (user?.avatarUrl) return el('img', { class: cls, src: user.avatarUrl, alt: `Foto de ${name}` });
+  const initials = name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  return el('span', { class: cls, 'aria-hidden': 'true' }, initials);
+}
+
+async function changeAvatar(file) {
+  try {
+    showToast('Subiendo foto…');
+    const blob = await resizeImage(file);
+    const url = await SupabaseAPI.uploadAvatar(blob);
+    const userId = currentUser().id;
+    setData(data => { data.users.find(u => u.id === userId).avatarUrl = url; });
+    showToast('Foto de perfil actualizada.', 'teal');
+  } catch (err) {
+    showToast(err.message || 'No se pudo actualizar la foto.', 'danger');
+  }
+}

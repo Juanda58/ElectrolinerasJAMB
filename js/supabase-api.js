@@ -71,6 +71,20 @@ const SupabaseAPI = {
     return this.session;
   },
 
+  async uploadAvatar(blob) {
+    const userId = this.session?.user?.id;
+    if (!userId) throw new Error('Inicia sesión para subir tu foto.');
+    const path = `${userId}/avatar.jpg`;
+    const response = await fetch(`${SUPABASE_CONFIG.url}/storage/v1/object/avatars/${path}`, {
+      method: 'POST',
+      headers: this.headers({ 'Content-Type': 'image/jpeg', 'x-upsert': 'true' }),
+      body: blob,
+    });
+    if (!response.ok) throw new Error('No fue posible subir la foto.');
+    // ?t= evita que el navegador muestre la foto anterior desde caché
+    return `${SUPABASE_CONFIG.url}/storage/v1/object/public/avatars/${path}?t=${Date.now()}`;
+  },  
+
   async loadState() {
     if (!this.session?.user?.id) return null;
     const [profiles, stations, connectors, reservations, activity, audit] = await Promise.all([
@@ -102,7 +116,7 @@ const SupabaseAPI = {
 
   profileToUser(profile) {
     return {
-      id: profile.id, name: profile.name, email: profile.email || '', password: '', role: profile.role,
+      id: profile.id, name: profile.name, email: profile.email || '', password: '', role: profile.role, avatarUrl: profile.avatar_url || '',
       plan: profile.plan, vehicle: profile.vehicle_brand || profile.vehicle_model ? { brand: profile.vehicle_brand || '', model: profile.vehicle_model || '', connector: profile.connector_type || 'Tipo 2 (AC)', batteryCapacityKwh: Number(profile.battery_capacity_kwh || 0) } : null,
       stats: { totalCharges: Number(profile.total_charges || 0), kwhConsumed: Number(profile.kwh_consumed || 0), co2AvoidedKg: Number(profile.co2_avoided_kg || 0), favoriteStationId: profile.preferences?.favoriteStationIds?.[0] || null },
       preferences: profile.preferences || { weeklyGoalKwh: 45, notifications: true, favoriteStationIds: [] },
@@ -154,7 +168,7 @@ const SupabaseAPI = {
   reservationToRow(row) { return { id: row.id, user_id: row.userId, station_id: row.stationId, connector_type: row.connectorType, reservation_date: row.date, reservation_hour: row.hour, target_kwh: row.targetKwh || 10, estimated_cost: row.estimatedCost || 0, payment_method: row.paymentMethod || PAYMENT_METHODS[0], payment_status: row.paymentStatus || 'pagado', status: row.status, penalty_cop: row.penaltyCOP || null, created_at: row.createdAt || new Date().toISOString() }; },
   activityToRow(row) { return { id: row.id, user_id: row.userId, station_id: row.stationId || null, station_name: row.station, activity_date: row.date, kwh: row.kwh || 0, cost_cop: row.costCOP || 0, duration_min: row.durationMin || 0 }; },
   auditToRow(row) { return { id: row.id, actor_id: row.actorId || null, action: row.action, detail: row.detail || '', tone: row.tone || 'ink', created_at: row.createdAt || new Date().toISOString() }; },
-  profileToRow(user) { return { id: user.id, name: user.name, email: user.email, role: user.role, plan: user.plan, vehicle_brand: user.vehicle?.brand || null, vehicle_model: user.vehicle?.model || null, connector_type: user.vehicle?.connector || null, battery_capacity_kwh: user.vehicle?.batteryCapacityKwh || null, total_charges: user.stats?.totalCharges || 0, kwh_consumed: user.stats?.kwhConsumed || 0, co2_avoided_kg: user.stats?.co2AvoidedKg || 0, preferences: user.preferences || {} }; },
+  profileToRow(user) { return { id: user.id, name: user.name, email: user.email, role: user.role, plan: user.plan, avatar_url: user.avatarUrl || null, vehicle_brand: user.vehicle?.brand || null, vehicle_model: user.vehicle?.model || null, connector_type: user.vehicle?.connector || null, battery_capacity_kwh: user.vehicle?.batteryCapacityKwh || null, total_charges: user.stats?.totalCharges || 0, kwh_consumed: user.stats?.kwhConsumed || 0, co2_avoided_kg: user.stats?.co2AvoidedKg || 0, preferences: user.preferences || {} }; },
   isUUID(value) { return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value); },
 };
 

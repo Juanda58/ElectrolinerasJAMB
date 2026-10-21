@@ -206,6 +206,7 @@ function renderTopbar(user) {
       el('span', { class: 'topbar-context__status' }, [el('span', { class: 'live-dot' }), 'Red operativa']),
     ]),
     el('button', { class: 'topbar-notifications', 'aria-label': 'Ver notificaciones', onclick: openNotifications }, [icon('bell'), unreadNotifications().length ? el('span', { class: 'notification-count' }, String(unreadNotifications().length)) : null]),
+    el('button', { class: 'topbar-avatar', 'aria-label': 'Mi perfil', title: user.name, onclick: () => { if (isAdmin()) return; if (state.ui.tab === '__charging__') ChargingView.reset(); setUI({ tab: 'garaje', chargingStationId: null }); } }, avatarNode(user, 'sm')),
     el('button', { class: 'btn btn--ghost btn--small app-shell__logout', onclick: logout }, [icon('logout'), ' Salir']),
   ]);
 }

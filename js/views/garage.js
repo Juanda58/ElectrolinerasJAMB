@@ -17,6 +17,8 @@ const GarageView = {
       el('p', { class: 'muted' }, 'Configura tu vehículo y toma decisiones de carga hechas para ti.'),
     ]));
 
+    wrap.appendChild(this.avatarCard(user));
+
     const weekly = this.weeklyKwh(user);
     const goal = Number(user.preferences.weeklyGoalKwh) || 45;
     const pct = Math.min(100, Math.round((weekly / goal) * 100));
@@ -35,6 +37,22 @@ const GarageView = {
     container.appendChild(wrap);
   },
 
+    avatarCard(user) {
+    const input = el('input', {
+      type: 'file', accept: 'image/png,image/jpeg,image/webp', hidden: 'hidden',
+      onchange: event => { const file = event.target.files[0]; event.target.value = ''; if (file) changeAvatar(file); },
+    });
+    return el('div', { class: 'card profile-card' }, [
+      avatarNode(user, 'xl'),
+      el('div', { class: 'profile-card__info' }, [
+        el('p', { class: 'eyebrow' }, 'Mi perfil'),
+        el('h2', {}, user.name),
+        el('p', { class: 'muted small' }, user.email),
+      ]),
+      el('label', { class: 'btn btn--ghost btn--small profile-card__upload' }, [icon('edit'), user.avatarUrl ? ' Cambiar foto' : ' Subir foto', input]),
+    ]);
+  },
+  
   weeklyKwh(user) {
     const cutoff = Date.now() - 7 * 86400000;
     return [...userActivity(user.id), ...(state.data.weightLog || [])].filter(item => new Date(item.date).getTime() >= cutoff).reduce((sum, item) => sum + Number(item.kwh || 0), 0);
