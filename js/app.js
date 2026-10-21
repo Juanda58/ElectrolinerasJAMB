@@ -1,12 +1,19 @@
 // app.js — render raíz, login, navegación, shell de la app
 'use strict';
+<<<<<<< HEAD
 // --- Mapeo de vistas de usuario ---
+=======
+
+>>>>>>> 67c34f6418f3e46a1365b722b1c9b3d6bca6e620
 const VIEWS = {
   hoy: TodayView, plan: PlanView, progreso: ProgressView,
   biblioteca: LibraryView, historial: HistoryView, reservas: ReservationsView,
   garaje: GarageView,
 };
+<<<<<<< HEAD
 // --- Mapeo de vistas administrativas ---
+=======
+>>>>>>> 67c34f6418f3e46a1365b722b1c9b3d6bca6e620
 
 const ADMIN_VIEWS = {
   'admin-dashboard': 'renderDashboard',
@@ -64,7 +71,11 @@ function renderRoot() {
   else root.appendChild(renderShell(user));
   renderToast();
 }
+<<<<<<< HEAD
 // --- Toast genérico ---
+=======
+
+>>>>>>> 67c34f6418f3e46a1365b722b1c9b3d6bca6e620
 function renderToast() {
   const existing = $('#toast'); if (existing) existing.remove();
   if (!state.ui.toast) return;
@@ -87,7 +98,11 @@ function renderAuth() {
   wrap.append(panel, content);
   return wrap;
 }
+<<<<<<< HEAD
 // --- Formulario de login ---
+=======
+
+>>>>>>> 67c34f6418f3e46a1365b722b1c9b3d6bca6e620
 function loginForm() {
   const card = el('div', { class: 'auth-card' });
   card.appendChild(el('h1', {}, 'Inicia sesión'));
@@ -125,7 +140,11 @@ function loginForm() {
   ]));
   return card;
 }
+<<<<<<< HEAD
 // --- Formulario de registro ---
+=======
+
+>>>>>>> 67c34f6418f3e46a1365b722b1c9b3d6bca6e620
 function registerForm() {
   const card = el('div', { class: 'auth-card' });
   card.appendChild(el('h1', {}, 'Crea tu cuenta'));
