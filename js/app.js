@@ -1,10 +1,11 @@
 // app.js — render raíz, login, navegación, shell de la app
 'use strict';
+let phonePromptShown = false;
 // --- Mapeo de vistas de usuario ---
 const VIEWS = {
   hoy: TodayView, plan: PlanView, progreso: ProgressView,
   biblioteca: LibraryView, historial: HistoryView, reservas: ReservationsView,
-  garaje: GarageView,
+  garaje: GarageView, contacto: ContactView,
 };
 // --- Mapeo de vistas administrativas ---
 
@@ -135,6 +136,7 @@ function registerForm() {
   const name = el('input', { name: 'name', required: true, placeholder: 'Tu nombre' });
   const email = el('input', { type: 'email', name: 'email', required: true, placeholder: 'tu@correo.com' });
   const password = el('input', { type: 'password', name: 'password', required: true, minlength: '8', placeholder: 'Mínimo 8 caracteres' });
+  const phone = el('input', { type: 'tel', name: 'phone', required: true, inputmode: 'tel', autocomplete: 'tel', placeholder: '300 123 4567' });
   const vehicleModel = el('input', { name: 'model', placeholder: 'Ej. Renault Kwid E-Tech' });
   const terms = el('input', { type: 'checkbox', name: 'terms', required: true });
   const error = el('p', { class: 'form-error', style: 'display:none' });
@@ -143,18 +145,23 @@ function registerForm() {
     el('label', {}, ['Nombre completo', name]),
     el('label', {}, ['Correo electrónico', email]),
     el('label', {}, ['Contraseña', password]),
+    el('label', {}, ['Teléfono', phone]),
     el('label', {}, ['Vehículo eléctrico', vehicleModel]),
     el('label', { class: 'checkbox-label' }, [terms, ' Acepto los términos y condiciones']),
     error,
     el('button', { class: 'btn btn--primary btn--block', type: 'submit' }, 'Crear cuenta gratis'),
   );
-  form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (!validateEmail(email.value)) { error.textContent = 'Ingresa un correo válido.'; error.style.display = 'block'; return; }
+    const normalizedPhone = normalizePhone(phone.value);
+    if (!normalizedPhone) { error.textContent = 'Ingresa un celular válido de 10 dígitos (ej. 300 123 4567).'; error.style.display = 'block'; return; }
     const submit = form.querySelector('button[type="submit"]');
     submit.disabled = true;
-    SupabaseAPI.signUp({ name: name.value.trim(), email: email.value.trim(), password: password.value })
-      .then(payload => payload.access_token ? hydrateRemoteState() : Promise.reject(new Error('Revisa tu correo para confirmar la cuenta y luego inicia sesión.')))
+    SupabaseAPI.signUp({ name: name.value.trim(), email: email.value.trim(), password: password.value, phone: normalizedPhone })
+      .then(payload => payload.access_token
+        ? SupabaseAPI.savePhone(normalizedPhone).catch(() => {}).then(() => hydrateRemoteState())
+        : Promise.reject(new Error('Revisa tu correo para confirmar la cuenta y luego inicia sesión.')))
       .then(() => setUI({ tab: 'hoy' }))
       .catch(err => { error.textContent = err.message; error.style.display = 'block'; })
       .finally(() => { submit.disabled = false; });
@@ -179,6 +186,10 @@ function renderShell(user) {
   shell.appendChild(main);
 
   renderActiveView(viewContainer);
+  if (!isAdmin() && !user.phone && !phonePromptShown) {
+    phonePromptShown = true;
+    setTimeout(() => GarageView.editPhone(user, { required: true }), 0);
+  }
   return shell;
 }
 
@@ -235,6 +246,7 @@ function renderActiveView(container) {
 }
 
 function logout() {
+  phonePromptShown = false;
   ChargingView.reset();
   SupabaseAPI.signOut().finally(() => { state.data = emptyRemoteState(); setUI({ tab: 'hoy', authMode: 'login' }); });
 }

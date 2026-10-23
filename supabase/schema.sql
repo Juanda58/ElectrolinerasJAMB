@@ -282,5 +282,10 @@ using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::tex
 create policy "avatars borrar propio" on storage.objects
 for delete to authenticated
 using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+alter table profiles add column if not exists phone text;
+
+
+
 -- Después de crear admin@jamb.com en Supabase Auth, ejecutar:
 -- update public.profiles set role = 'admin', plan = 'Operador de red' where email = 'admin@jamb.com';

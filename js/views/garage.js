@@ -37,7 +37,7 @@ const GarageView = {
     container.appendChild(wrap);
   },
 
-    avatarCard(user) {
+      avatarCard(user) {
     const input = el('input', {
       type: 'file', accept: 'image/png,image/jpeg,image/webp', hidden: 'hidden',
       onchange: event => { const file = event.target.files[0]; event.target.value = ''; if (file) changeAvatar(file); },
@@ -48,9 +48,35 @@ const GarageView = {
         el('p', { class: 'eyebrow' }, 'Mi perfil'),
         el('h2', {}, user.name),
         el('p', { class: 'muted small' }, user.email),
+        el('p', { class: 'muted small' }, user.phone ? `Tel: ${formatPhone(user.phone)}` : 'Teléfono pendiente'),
       ]),
-      el('label', { class: 'btn btn--ghost btn--small profile-card__upload' }, [icon('edit'), user.avatarUrl ? ' Cambiar foto' : ' Subir foto', input]),
+      el('div', { class: 'profile-card__actions' }, [
+        el('label', { class: 'btn btn--ghost btn--small profile-card__upload' }, [icon('edit'), user.avatarUrl ? ' Cambiar foto' : ' Subir foto', input]),
+        el('button', { class: 'btn btn--ghost btn--small', onclick: () => this.editPhone(user) }, [icon('phone'), user.phone ? ' Editar teléfono' : ' Agregar teléfono']),
+      ]),
     ]);
+  },
+
+  editPhone(user, { required = false } = {}) {
+    const form = el('form', { class: 'form' });
+    const phone = el('input', { type: 'tel', inputmode: 'tel', autocomplete: 'tel', required: true, placeholder: '300 123 4567', value: user.phone ? formatPhone(user.phone) : '' });
+    form.append(
+      el('p', { class: 'muted small' }, 'Los administradores usarán este número para contactarte si hay algún problema con tu cuenta o tus reservas.'),
+      el('label', {}, ['Teléfono celular', phone]),
+    );
+    const save = () => {
+      const normalized = normalizePhone(phone.value);
+      if (!normalized) { showToast('Ingresa un celular válido de 10 dígitos (ej. 300 123 4567).', 'danger'); return; }
+      setData(data => { data.users.find(item => item.id === user.id).phone = normalized; });
+      Modal.close();
+      showToast('Teléfono guardado.', 'teal');
+    };
+    form.addEventListener('submit', event => { event.preventDefault(); save(); });
+    Modal.open({
+      title: required ? 'Agrega tu número de teléfono' : 'Mi teléfono',
+      body: form,
+      actions: [{ label: 'Ahora no', variant: 'ghost', onClick: () => Modal.close() }, { label: 'Guardar', variant: 'primary', onClick: save }],
+    });
   },
   
   weeklyKwh(user) {

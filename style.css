@@ -391,3 +391,15 @@ body{overflow-x:hidden;}
 .profile-card__info p{margin:.1rem 0 0;}
 .profile-card__upload{cursor:pointer;}
 @media (max-width:760px){.topbar-avatar{order:2;}}
+
+/* --- Contacto y teléfono --- */
+.profile-card__actions{display:flex;flex-direction:column;gap:.5rem;}
+.contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem;}
+.contact-card{display:flex;flex-direction:column;align-items:flex-start;gap:.4rem;margin:0;}
+.contact-card h3{margin:.3rem 0 0;}
+.contact-card .btn{margin-top:auto;text-decoration:none;}
+.contact-info{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.contact-info strong{font:700 1.15rem var(--font-display);}
+.admin-user-card a{color:var(--color-blue-600);font-weight:600;}
+@media (max-width:680px){.contact-grid{grid-template-columns:1fr;}.profile-card__actions{width:100%;}}
+

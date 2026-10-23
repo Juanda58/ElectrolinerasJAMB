@@ -161,3 +161,18 @@ async function changeAvatar(file) {
     showToast(err.message || 'No se pudo actualizar la foto.', 'danger');
   }
 }
+
+// --- Teléfono ---
+// Devuelve el número normalizado (+57XXXXXXXXXX) o null si no es válido
+function normalizePhone(value) {
+  const raw = String(value || '').replace(/[\s\-().]/g, '');
+  if (/^3\d{9}$/.test(raw)) return `+57${raw}`;
+  if (/^\+?573\d{9}$/.test(raw)) return `+${raw.replace('+', '')}`;
+  if (/^\+\d{8,15}$/.test(raw)) return raw; // otros países
+  return null;
+}
+
+function formatPhone(phone) {
+  const m = /^\+57(\d{3})(\d{3})(\d{4})$/.exec(phone || '');
+  return m ? `+57 ${m[1]} ${m[2]} ${m[3]}` : (phone || '');
+}

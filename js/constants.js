@@ -40,6 +40,7 @@ const TABS = [
   { id: 'historial', label: 'Historial', icon: 'clock' },
   { id: 'reservas', label: 'Reservas', icon: 'bolt' },
   { id: 'garaje', label: 'Mi garaje', icon: 'car' },
+  { id: 'contacto', label: 'Soporte', icon: 'phone' },
 ];
 
 const ADMIN_TABS = [
@@ -153,3 +154,10 @@ const SEED_RESERVATIONS = [
 ];
 
 const PARTNERS = ['Andes Motors', 'GridPoint Colombia', 'Banco Solar', 'Movilidad Andina', 'Rueda Verde Seguros', 'Voltia Energía'];
+
+const SUPPORT_CONTACT = {
+  phone: '+5733311112255',      // llamadas y SMS, con +57
+  whatsapp: '5733311112255',    // WhatsApp, sin el +
+  display: '+57 333 111 12255', // como se muestra en pantalla
+  hours: 'Lunes a viernes, 8:00 a. m. – 6:00 p. m.',
+};
