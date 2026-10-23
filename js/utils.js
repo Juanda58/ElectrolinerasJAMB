@@ -154,6 +154,7 @@ async function changeAvatar(file) {
     showToast('Subiendo foto…');
     const blob = await resizeImage(file);
     const url = await SupabaseAPI.uploadAvatar(blob);
+    await SupabaseAPI.saveAvatarUrl(url);
     const userId = currentUser().id;
     setData(data => { data.users.find(u => u.id === userId).avatarUrl = url; });
     showToast('Foto de perfil actualizada.', 'teal');
