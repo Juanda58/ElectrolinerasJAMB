@@ -64,12 +64,18 @@ const GarageView = {
       el('p', { class: 'muted small' }, 'Los administradores usarán este número para contactarte si hay algún problema con tu cuenta o tus reservas.'),
       el('label', {}, ['Teléfono celular', phone]),
     );
-    const save = () => {
+        const save = async () => {
       const normalized = normalizePhone(phone.value);
       if (!normalized) { showToast('Ingresa un celular válido de 10 dígitos (ej. 300 123 4567).', 'danger'); return; }
-      setData(data => { data.users.find(item => item.id === user.id).phone = normalized; });
-      Modal.close();
-      showToast('Teléfono guardado.', 'teal');
+      try {
+        await SupabaseAPI.savePhone(normalized);
+        setData(data => { data.users.find(item => item.id === user.id).phone = normalized; });
+        Modal.close();
+        showToast('Teléfono guardado.', 'teal');
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'No se pudo guardar el teléfono.', 'danger');
+      }
     };
     form.addEventListener('submit', event => { event.preventDefault(); save(); });
     Modal.open({

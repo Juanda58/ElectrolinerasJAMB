@@ -93,12 +93,14 @@ const SupabaseAPI = {
     });
   },
 
-    async savePhone(phone) {
+  async savePhone(phone) {
     const userId = this.session?.user?.id;
-    if (!userId) return;
-    return this.request(`profiles?id=eq.${encodeURIComponent(userId)}`, {
-      method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ phone }),
+    if (!userId) throw new Error('Inicia sesión para guardar tu teléfono.');
+    const rows = await this.request(`profiles?id=eq.${encodeURIComponent(userId)}`, {
+      method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify({ phone }),
     });
+    if (!rows || !rows.length) throw new Error('No se encontró tu perfil o no tienes permiso para actualizarlo.');
+    return rows[0];
   },
 
 
