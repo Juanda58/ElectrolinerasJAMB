@@ -151,18 +151,25 @@ function registerForm() {
     error,
     el('button', { class: 'btn btn--primary btn--block', type: 'submit' }, 'Crear cuenta gratis'),
   );
-    form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (!validateEmail(email.value)) { error.textContent = 'Ingresa un correo válido.'; error.style.display = 'block'; return; }
     const normalizedPhone = normalizePhone(phone.value);
     if (!normalizedPhone) { error.textContent = 'Ingresa un celular válido de 10 dígitos (ej. 300 123 4567).'; error.style.display = 'block'; return; }
     const submit = form.querySelector('button[type="submit"]');
     submit.disabled = true;
+    let phoneFailed = false;
     SupabaseAPI.signUp({ name: name.value.trim(), email: email.value.trim(), password: password.value, phone: normalizedPhone })
-      .then(payload => payload.access_token
-        ? SupabaseAPI.savePhone(normalizedPhone).catch(() => {}).then(() => hydrateRemoteState())
-        : Promise.reject(new Error('Revisa tu correo para confirmar la cuenta y luego inicia sesión.')))
-      .then(() => setUI({ tab: 'hoy' }))
+      .then(async payload => {
+        if (!payload.access_token) throw new Error('Revisa tu correo para confirmar la cuenta y luego inicia sesión. Tu teléfono quedará guardado.');
+        try { await SupabaseAPI.savePhone(normalizedPhone); }
+        catch (err) { console.error(err); phoneFailed = true; }
+        await hydrateRemoteState();
+      })
+      .then(() => {
+        setUI({ tab: 'hoy' });
+        if (phoneFailed) showToast('Cuenta creada, pero no se pudo guardar el teléfono. Agrégalo en Mi garaje.', 'danger');
+      })
       .catch(err => { error.textContent = err.message; error.style.display = 'block'; })
       .finally(() => { submit.disabled = false; });
   });
