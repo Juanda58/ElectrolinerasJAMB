@@ -1,46 +1,56 @@
-// views/contact.js — contacto con los administradores
+// views/contact.js — ventanilla flotante de ayuda
 'use strict';
 
 const ContactView = {
-    render(container) {
-        clear(container);
-        const user = currentUser();
-        const message = `Hola, soy ${user.name} (${user.phone ? formatPhone(user.phone) : user.email}) y necesito ayuda con JAMB.`;
-        const waUrl = `https://wa.me/${SUPPORT_CONTACT.whatsapp}?text=${encodeURIComponent(message)}`;
-        const smsUrl = `sms:${SUPPORT_CONTACT.phone}?body=${encodeURIComponent(message)}`;
+    _open: false,
 
-        const wrap = el('div', { class: 'view view--contact' });
-        wrap.appendChild(el('header', { class: 'view-header' }, [
-        el('p', { class: 'eyebrow' }, 'Atención JAMB'),
-        el('h1', {}, 'Contacta a un administrador'),
-        el('p', { class: 'muted' }, 'Llama o escríbenos si tienes un problema con una estación, una reserva o un pago.'),
-        ]));
+    toggle() {
+    this._open = !this._open;
+    const old = $('.help-widget');
+    if (old) old.replaceWith(this.renderWidget(currentUser()));
+    },
 
-    const option = (iconName, title, detail, button) => el('div', { class: 'card contact-card' }, [
-        el('span', { class: 'stat-card__icon', html: ICONS[iconName] }),
-        el('h3', {}, title),
-        el('p', { class: 'muted small' }, detail),
-        button,
+    renderWidget(user) {
+    const wrap = el('div', { class: 'help-widget' });
+    if (this._open) wrap.appendChild(this.panel(user));
+    wrap.appendChild(el('button', {
+        class: 'help-fab', type: 'button',
+        'aria-label': this._open ? 'Cerrar ayuda' : 'Abrir ayuda',
+        'aria-expanded': String(this._open),
+        onclick: () => this.toggle(),
+    }, [icon(this._open ? 'x' : 'chat'), this._open ? null : el('span', { class: 'help-fab__label' }, 'Ayuda')]));
+    return wrap;
+    },
+
+    panel(user) {
+    const message = `Hola, soy ${user.name} (${user.phone ? formatPhone(user.phone) : user.email}) y necesito ayuda con JAMB.`;
+    const waUrl = `https://wa.me/${SUPPORT_CONTACT.whatsapp}?text=${encodeURIComponent(message)}`;
+    const smsUrl = `sms:${SUPPORT_CONTACT.phone}?body=${encodeURIComponent(message)}`;
+
+    const option = (cls, iconName, title, detail, href, external) => el('a', {
+        class: `help-option help-option--${cls}`, href,
+        target: external ? '_blank' : null, rel: external ? 'noopener' : null,
+    }, [
+        el('span', { class: 'help-option__icon' }, icon(iconName)),
+        el('span', { class: 'help-option__text' }, [el('strong', {}, title), el('small', {}, detail)]),
     ]);
 
-    wrap.appendChild(el('div', { class: 'contact-grid' }, [
-    option('phone', 'Llamar', `Habla directamente con un administrador. ${SUPPORT_CONTACT.hours}`,
-        el('a', { class: 'btn btn--primary btn--small', href: `tel:${SUPPORT_CONTACT.phone}` }, [icon('phone'), ` ${SUPPORT_CONTACT.display}`])),
-    option('chat', 'WhatsApp', 'Escríbenos por WhatsApp con tus datos ya incluidos en el mensaje.',
-        el('a', { class: 'btn btn--primary btn--small', href: waUrl, target: '_blank', rel: 'noopener' }, [icon('chat'), ' Abrir WhatsApp'])),
-    option('chat', 'Mensaje de texto', 'Envía un SMS desde tu celular.',
-        el('a', { class: 'btn btn--ghost btn--small', href: smsUrl }, [icon('chat'), ' Enviar SMS'])),
-    ]));
-
-    wrap.appendChild(el('div', { class: 'card contact-info' }, [
+    return el('div', { class: 'help-panel card', role: 'dialog', 'aria-label': 'Ayuda' }, [
+        el('div', { class: 'help-panel__header' }, [
+        el('div', {}, [el('p', { class: 'eyebrow' }, 'Atención JAMB'), el('h3', {}, '¿Necesitas ayuda?')]),
+        el('button', { class: 'btn btn--icon', type: 'button', 'aria-label': 'Cerrar', onclick: () => this.toggle() }, icon('x')),
+        ]),
+        el('p', { class: 'muted small' }, SUPPORT_CONTACT.hours),
+        option('call', 'phone', 'Llamar', SUPPORT_CONTACT.display, `tel:${SUPPORT_CONTACT.phone}`, false),
+        option('wa', 'whatsapp', 'WhatsApp', 'Chatea con un administrador', waUrl, true),
+        option('sms', 'sms', 'Mensaje de texto', 'Envía un SMS', smsUrl, false),
+        el('div', { class: 'help-panel__phone' }, [
         el('div', {}, [
             el('p', { class: 'eyebrow' }, 'Tu número de contacto'),
             el('strong', {}, user.phone ? formatPhone(user.phone) : 'Aún no registras un teléfono'),
-            el('p', { class: 'muted small' }, 'Los administradores pueden llamarte o escribirte a este número.'),
         ]),
-        el('button', { class: 'btn btn--ghost btn--small', onclick: () => GarageView.editPhone(user) }, user.phone ? 'Cambiar' : 'Agregar'),
-    ]));
-
-    container.appendChild(wrap);
+        el('button', { class: 'btn btn--ghost btn--small', type: 'button', onclick: () => GarageView.editPhone(user) }, user.phone ? 'Cambiar' : 'Agregar'),
+        ]),
+    ]);
     },
 };

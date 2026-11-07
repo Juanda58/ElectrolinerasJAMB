@@ -5,7 +5,7 @@ let phonePromptShown = false;
 const VIEWS = {
   hoy: TodayView, plan: PlanView, progreso: ProgressView,
   biblioteca: LibraryView, historial: HistoryView, reservas: ReservationsView,
-  garaje: GarageView, contacto: ContactView,
+  garaje: GarageView,
 };
 // --- Mapeo de vistas administrativas ---
 
@@ -190,7 +190,8 @@ function renderShell(user) {
   main.appendChild(renderTopbar(user));
   const viewContainer = el('div', { id: 'view-container', class: 'view-container' });
   main.appendChild(viewContainer);
-  shell.appendChild(main);
+    shell.appendChild(main);
+  if (!isAdmin()) shell.appendChild(ContactView.renderWidget(user));
 
   renderActiveView(viewContainer);
   if (!isAdmin() && !user.phone && !phonePromptShown) {

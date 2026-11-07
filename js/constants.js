@@ -40,7 +40,6 @@ const TABS = [
   { id: 'historial', label: 'Historial', icon: 'clock' },
   { id: 'reservas', label: 'Reservas', icon: 'bolt' },
   { id: 'garaje', label: 'Mi garaje', icon: 'car' },
-  { id: 'contacto', label: 'Soporte', icon: 'phone' },
 ];
 
 const ADMIN_TABS = [
